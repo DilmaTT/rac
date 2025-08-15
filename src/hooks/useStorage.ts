@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Session, Settings } from '@/types';
+import type { Session, Settings, ListViewOptions } from '@/types';
 
 const SESSIONS_STORAGE_KEY = 'poker-tracker-sessions';
 const SETTINGS_STORAGE_KEY = 'poker-tracker-settings';
@@ -15,6 +15,24 @@ const defaultSettings: Settings = {
     hands: 0,
     sessions: 0,
   },
+  listViewOptions: {
+    // Формат даты
+    showMonth: true,
+    showDayOfWeek: false,
+    // Фильтр по датам
+    dateRangeMode: 'month', // 'all', 'week', 'custom'
+    customDateRangeDays: 7,
+    // Столбцы
+    showStartTime: true,
+    showEndTime: true,
+    showSessionCount: true,
+    showDuration: true,
+    showHandsPerHour: true,
+    showDailyPlan: false,
+    showDailyPlanRemaining: false,
+    showTotalPlayTime: true,
+    showTotalPlanRemaining: false
+  }
 };
 
 // Generic hook to manage a value in localStorage
@@ -59,6 +77,10 @@ export const useStorage = () => {
       ...defaultSettings.goals,
       ...(storedSettings.goals || {}),
     },
+    listViewOptions: {
+      ...defaultSettings.listViewOptions,
+      ...(storedSettings.listViewOptions || {}),
+    },
   }), [storedSettings]);
 
   const addSession = useCallback((newSession: Omit<Session, 'id' | 'notes' | 'handsPlayed'>) => {
@@ -88,6 +110,13 @@ export const useStorage = () => {
         updated.goals = {
           ...(prevSettings.goals || defaultSettings.goals),
           ...newSettings.goals,
+        };
+      }
+      // Handle nested updates for the 'listViewOptions' object correctly
+      if (newSettings.listViewOptions) {
+        updated.listViewOptions = {
+          ...(prevSettings.listViewOptions || defaultSettings.listViewOptions),
+          ...newSettings.listViewOptions,
         };
       }
       return updated;
